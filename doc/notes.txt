@@ -1,0 +1,64 @@
+Design and implement a RESTful API (including data model and the backing implementation) for money transfers between accounts.
+
+Explicit requirements:
+	1. You can use Java, Scala or Kotlin.
+	2. Keep it simple and to the point (e.g. no need to implement any authentication).
+	3. Assume the API is invoked by multiple systems and services on behalf of end users.
+	4. You can use frameworks/libraries if you like (except Spring), but don't forget about requirement #2 – keep it simple and avoid heavy frameworks.
+	5. The datastore should run in-memory for the sake of this test.
+	6. The final result should be executable as a standalone program (should not require a pre-installed container/server).
+	7. Demonstrate with tests that the API works as expected.
+	8. Please put your work on github or bitbucket.
+
+Implicit requirements:
+	1. The code produced by you is expected to be of high quality.
+	2. There are no detailed requirements, use common sense.
+
+-------------------------------------------------------------------------------------------------------
+| review of others attempts
+-------------------------------------------------------------------------------------------------------
+
+[peshrus]
+- a lot of unnecessary dependencies (Guice, Jedis, embedded-redis, Mockito)
+- use of a real database instead of in-memory datastore
+- not parallel, no synchronization
+- use of GET which should be idempotent instead of POST or PUT
+- URL scheme/paths do not follow REST convention (e.g. /transfer/<sum>?form=<from>&to=<to>)
+- tests are not unit tests but rather integration/functional
+- no abstract model (DAO not separated from model and interfaces)
+- almost no interfaces
+- dependency injection through a lib/framework
+- no clear business logic separation
+
+[ismagilov]
+- use of SQL database and a lib for queries
+- use of jooq codegen
+- proper unit tests for the Validator
+- SQL in unit tests
+- poor attempt at concurrency testing
+- poor model (POJO with all fields public)
+- no interfaces/abstractions
+- JsonTransformer defined, but just wraps Gson and not even used instead of Gson in some places
+- no clear business logic separation
+
+[lee-walters]
+- proper REST
+- ton of heavy dependencies: dropwizard, mockito, h2db, hibernate
+- no unit tests, just integration/functional
+- poor attempt at concurrency testing
+- poor model (mutable POJOs)
+- javax.persistence mixed with domain objects
+- use of SQL database
+- no clear business logic separation
+
+
+-------------------------------------------------------------------------------------------------------
+| design decisions/assumptions
+-------------------------------------------------------------------------------------------------------
+* proper domain design: entities, interfaces; abstract bank
+* separate business logic with injected dependencies
+* unit tests for the bank business logic
+* clear layers separation: DAO, bank, API, HTTP server; or other division based on the design
+* in-memory storage (Java collections)
+* first iteration with simple lock based transaction synchronization
+* 

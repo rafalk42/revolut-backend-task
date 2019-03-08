@@ -1,0 +1,30 @@
+The business domain is represented by an simple abstract bank, which exposes an API for performing operations.
+
+[Bank]
+* account: ID, balance
+ + open
+ + findById
+ + transfer
+ + close
+<optional>
+* audit log: <agent? initiator? smth like that>, timestamp, data
+ + retrieve
+
+[Account DAO]
++ open
++ getBalance
++ setBalance
++ close
++ doesItExist
+
+[AuditLog DAO]
++ log
++ findByTimestamp
++ findByData
+
+------------------------------
+[Bank Java API]
+* bank
+ + accountCreate (AccountDescription): Account
+ + accountFindById (AccountId): Account
+ + transfer (Account, Account, Amount): TransferResult
