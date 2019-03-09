@@ -1,4 +1,4 @@
-package rafalk42.domain.bank;
+package rafalk42.bank.domain;
 
 
 public class BankInternalError

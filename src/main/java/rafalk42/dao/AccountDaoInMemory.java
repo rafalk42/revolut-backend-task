@@ -1,24 +1,30 @@
 package rafalk42.dao;
 
-import rafalk42.domain.dao.AccountDao;
-import rafalk42.domain.dao.AccountDaoInternalError;
-
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 
+/**
+ * A simple in-memory data store, an implementation of account DAO.
+ * Important:
+ * 1. it does not support any kind of persistence,
+ * 2. it is NOT thread-safe by any means,
+ * 3. it does NOT impose any business rules, just some null checks.
+ */
 public class AccountDaoInMemory
 		implements AccountDao
 {
 	private final Map<String, AccountInMemory> accounts;
-	private final AtomicInteger accountIdCounter;
+	private int accountIdCounter;
 	
 	public AccountDaoInMemory()
 	{
 		accounts = new HashMap<>();
-		accountIdCounter = new AtomicInteger(1);
+		accountIdCounter = 1;
 	}
 	
 	@Override
@@ -33,29 +39,45 @@ public class AccountDaoInMemory
 		String newAccountId = getNextAccountId();
 		AccountInMemory newAccount = new AccountInMemory(description, initialBalance);
 		
-		synchronized (accounts)
-		{
-			accounts.put(newAccountId, newAccount);
-		}
+		accounts.put(newAccountId, newAccount);
 		
 		return newAccountId;
 	}
 	
 	@Override
-	public String getDescription(String accountId)
+	public boolean doesItExist(String accountId)
+			throws AccountDaoInternalError
+	{
+		return accounts.containsKey(accountId);
+	}
+	
+	@Override
+	public Set<AccountInfo> findAll()
+			throws AccountDaoInternalError
+	{
+		return accounts.entrySet()
+					   .stream()
+					   .map(entry -> new AccountInfo(entry.getKey(),
+													 entry.getValue().description,
+													 entry.getValue().balance))
+					   .collect(Collectors.toSet());
+	}
+	
+	@Override
+	public AccountInfo getInfo(String accountId)
 			throws AccountDaoInternalError
 	{
 		verifyAccountId(accountId);
 		
-		synchronized (accounts)
+		if (!accounts.containsKey(accountId))
 		{
-			if (!accounts.containsKey(accountId))
-			{
-				throw new IllegalArgumentException("Account not found");
-			}
-			
-			return accounts.get(accountId).getDescription();
+			throw new IllegalArgumentException("Account not found");
 		}
+		
+		AccountInMemory account = accounts.get(accountId);
+		return new AccountInfo(accountId,
+							   account.getDescription(),
+							   account.getBalance());
 	}
 	
 	@Override
@@ -64,15 +86,13 @@ public class AccountDaoInMemory
 	{
 		verifyAccountId(accountId);
 		
-		synchronized (accounts)
+		if (!accounts.containsKey(accountId))
 		{
-			if (!accounts.containsKey(accountId))
-			{
-				throw new IllegalArgumentException("Account not found");
-			}
-			
-			return accounts.get(accountId).getBalance();
+			throw new IllegalArgumentException("Account not found");
 		}
+		
+		return accounts.get(accountId)
+					   .getBalance();
 	}
 	
 	@Override
@@ -86,14 +106,11 @@ public class AccountDaoInMemory
 			throw new IllegalArgumentException("New balance cannot be null");
 		}
 		
-		synchronized (accounts)
+		if (!accounts.containsKey(accountId))
 		{
-			if (!accounts.containsKey(accountId))
-			{
-				throw new IllegalArgumentException("Account not found");
-			}
-			accounts.get(accountId).setBalance(newBalance);
+			throw new IllegalArgumentException("Account not found");
 		}
+		accounts.get(accountId).setBalance(newBalance);
 	}
 	
 	@Override
@@ -102,29 +119,16 @@ public class AccountDaoInMemory
 	{
 		verifyAccountId(accountId);
 		
-		synchronized (accounts)
+		if (!accounts.containsKey(accountId))
 		{
-			if (!accounts.containsKey(accountId))
-			{
-				throw new IllegalArgumentException("Account not found");
-			}
-			accounts.remove(accountId);
+			throw new IllegalArgumentException("Account not found");
 		}
-	}
-	
-	@Override
-	public boolean doesItExist(String accountId)
-			throws AccountDaoInternalError
-	{
-		synchronized (accounts)
-		{
-			return accounts.containsKey(accountId);
-		}
+		accounts.remove(accountId);
 	}
 	
 	private String getNextAccountId()
 	{
-		return String.format("%010d", accountIdCounter.getAndIncrement());
+		return String.format("%010d", accountIdCounter++);
 	}
 	
 	private void verifyAccountId(String accountId)
@@ -146,7 +150,7 @@ public class AccountDaoInMemory
 			balance = initialBalance;
 		}
 		
-		public String getDescription()
+		String getDescription()
 		{
 			return description;
 		}

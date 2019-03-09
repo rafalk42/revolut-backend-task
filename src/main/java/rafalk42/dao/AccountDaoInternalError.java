@@ -1,4 +1,4 @@
-package rafalk42.domain.dao;
+package rafalk42.dao;
 
 public class AccountDaoInternalError
 		extends Exception
