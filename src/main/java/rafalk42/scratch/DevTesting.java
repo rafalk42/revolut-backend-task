@@ -1,9 +1,9 @@
 package rafalk42.scratch;
 
 import rafalk42.bank.domain.*;
-import rafalk42.dao.AccountDaoInMemory;
-import rafalk42.dao.AccountDao;
 import rafalk42.bank.rockefeller.RockefellerBank;
+import rafalk42.dao.AccountDao;
+import rafalk42.dao.AccountDaoInMemory;
 
 import java.math.BigDecimal;
 
@@ -38,9 +38,9 @@ public class DevTesting
 							  account4, bank.accountGetBalance(account4));
 			
 			TransferResult result = transfer(bank, account4, account1, 1000.00);
-
-			System.out.println(result);
 			
+			System.out.println(result);
+
 //			for (int i = 0; i < 1000; i++)
 //			{
 //				List<Thread> threads = new ArrayList<>();

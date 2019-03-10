@@ -31,7 +31,7 @@ public class Amount
 	public String toString()
 	{
 		return "Amount{" +
-				"amount=" + amount +
-				'}';
+			   "amount=" + amount +
+			   '}';
 	}
 }

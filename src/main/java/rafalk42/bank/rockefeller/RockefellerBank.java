@@ -68,8 +68,8 @@ public class RockefellerBank
 			Set<AccountInfo> allAccounts = accountDao.findAll();
 			
 			return allAccounts.stream()
-							  .map(accountInfo -> new RockefellerBankAccount(accountInfo.getId()))
-							  .collect(Collectors.toSet());
+					.map(accountInfo -> new RockefellerBankAccount(accountInfo.getId()))
+					.collect(Collectors.toSet());
 		}
 		catch (AccountDaoInternalError ex)
 		{
@@ -241,8 +241,9 @@ public class RockefellerBank
 	/**
 	 * Actually execute the transfer. This method contains the business logic of a transfer.
 	 * Assumptions:
-	 * 1. amount transferred cannot be negative,
-	 * 2. account cannot get into debt - that is the balance cannot be negative after the transfer.
+	 * 1. source and destination account must be different,
+	 * 2. amount transferred cannot be negative,
+	 * 3. account cannot get into debt - that is the balance cannot be negative after the transfer.
 	 * <p>
 	 * Of course a proper rule engine of some sort should be used for better maintainability, but this is explicit
 	 * enough for the purpose of this implementation.
@@ -256,6 +257,12 @@ public class RockefellerBank
 			throws AccountDaoInternalError
 	{
 		// Verify assumption #1.
+		if (sourceAccountId.equals(destinationAccountId))
+		{
+			return TransferResult.getNotAllowed();
+		}
+		
+		// Verify assumption #2.
 		if (amount.compareTo(BigDecimal.ZERO) < 0)
 		{
 			return TransferResult.getInvalidAmount();
@@ -269,7 +276,7 @@ public class RockefellerBank
 		BigDecimal afterSourceBalance = beforeSourceBalance.subtract(amount);
 		BigDecimal afterDestinationBalance = beforeDestinationBalance.add(amount);
 		
-		// Verify assumption #2.
+		// Verify assumption #3.
 		if (afterSourceBalance.compareTo(BigDecimal.ZERO) < 0)
 		{
 			return TransferResult.getNotEnoughFunds();

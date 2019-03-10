@@ -19,7 +19,7 @@ public class AccountDescriptionDto
 		return description;
 	}
 	
-	public BigDecimal getInitialBalance()
+	BigDecimal getInitialBalance()
 	{
 		return initialBalance;
 	}

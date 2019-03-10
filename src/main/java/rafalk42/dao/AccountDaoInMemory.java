@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -61,11 +60,11 @@ public class AccountDaoInMemory
 			throws AccountDaoInternalError
 	{
 		return accounts.entrySet()
-					   .stream()
-					   .map(entry -> new AccountInfo(entry.getKey(),
-													 entry.getValue().description,
-													 entry.getValue().balance))
-					   .collect(Collectors.toSet());
+				.stream()
+				.map(entry -> new AccountInfo(entry.getKey(),
+											  entry.getValue().description,
+											  entry.getValue().balance))
+				.collect(Collectors.toSet());
 	}
 	
 	@Override
@@ -97,7 +96,7 @@ public class AccountDaoInMemory
 		}
 		
 		return accounts.get(accountId)
-					   .getBalance();
+				.getBalance();
 	}
 	
 	@Override

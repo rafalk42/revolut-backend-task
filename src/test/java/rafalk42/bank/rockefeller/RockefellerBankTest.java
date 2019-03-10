@@ -13,8 +13,6 @@ import rafalk42.dao.AccountInfo;
 import java.math.BigDecimal;
 import java.util.Set;
 
-import static org.junit.Assert.*;
-
 
 public class RockefellerBankTest
 {

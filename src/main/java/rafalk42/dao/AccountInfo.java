@@ -55,8 +55,8 @@ public class AccountInfo
 		}
 		AccountInfo that = (AccountInfo) o;
 		return id.equals(that.id) &&
-				Objects.equals(description, that.description) &&
-				balance.equals(that.balance);
+			   Objects.equals(description, that.description) &&
+			   balance.equals(that.balance);
 	}
 	
 	@Override
