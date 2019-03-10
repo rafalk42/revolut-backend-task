@@ -3,12 +3,9 @@ package rafalk42.scratch;
 import rafalk42.bank.domain.*;
 import rafalk42.dao.AccountDaoInMemory;
 import rafalk42.dao.AccountDao;
-import rafalk42.rockefeller.RockefellerBank;
+import rafalk42.bank.rockefeller.RockefellerBank;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 
 public class DevTesting
@@ -24,9 +21,9 @@ public class DevTesting
 															 100.00));
 			BankAccount account2 = bank.accountCreate(getBAD("Second account",
 															 100.00));
-			BankAccount account3 = bank.accountCreate(getBAD("Thrid account",
+			BankAccount account3 = bank.accountCreate(getBAD("Third account",
 															 100.00));
-			BankAccount account4 = bank.accountCreate(getBAD("Thrid account",
+			BankAccount account4 = bank.accountCreate(getBAD("Fourth account",
 															 100.00));
 			
 			System.out.printf("Created accounts: %s, %s, %s\n",
@@ -35,40 +32,44 @@ public class DevTesting
 							  account3);
 			
 			System.out.printf("Balances before:\n\t%s: %s\n\t%s: %s\n\t%s: %s\n\t%s: %s\n",
-							  account1, bank.getBalance(account1),
-							  account2, bank.getBalance(account2),
-							  account3, bank.getBalance(account3),
-							  account4, bank.getBalance(account4));
+							  account1, bank.accountGetBalance(account1),
+							  account2, bank.accountGetBalance(account2),
+							  account3, bank.accountGetBalance(account3),
+							  account4, bank.accountGetBalance(account4));
 			
-			for (int i = 0; i < 1000; i++)
-			{
-				List<Thread> threads = new ArrayList<>();
-//			threads.add(new Thread(() -> transfer(bank, account4, account1, 10.00)));
-//			threads.add(new Thread(() -> transfer(bank, account4, account2, 10.00)));
-//			threads.add(new Thread(() -> transfer(bank, account4, account3, 10.00)));
-				threads.add(new Thread(() -> transfer(bank, account1, account2, 10.00)));
-				threads.add(new Thread(() -> transfer(bank, account2, account3, 10.00)));
-				threads.add(new Thread(() -> transfer(bank, account3, account1, 10.00)));
-				
-				threads.forEach(Thread::start);
-				threads.forEach(thread ->
-								{
-									try
-									{
-										thread.join();
-									}
-									catch (InterruptedException ex)
-									{
-										ex.printStackTrace();
-									}
-								});
-			}
+			TransferResult result = transfer(bank, account4, account1, 1000.00);
+
+			System.out.println(result);
+			
+//			for (int i = 0; i < 1000; i++)
+//			{
+//				List<Thread> threads = new ArrayList<>();
+////			threads.add(new Thread(() -> transfer(bank, account4, account1, 10.00)));
+////			threads.add(new Thread(() -> transfer(bank, account4, account2, 10.00)));
+////			threads.add(new Thread(() -> transfer(bank, account4, account3, 10.00)));
+//				threads.add(new Thread(() -> transfer(bank, account1, account2, 10.00)));
+//				threads.add(new Thread(() -> transfer(bank, account2, account3, 10.00)));
+//				threads.add(new Thread(() -> transfer(bank, account3, account1, 10.00)));
+//
+//				threads.forEach(Thread::start);
+//				threads.forEach(thread ->
+//								{
+//									try
+//									{
+//										thread.join();
+//									}
+//									catch (InterruptedException ex)
+//									{
+//										ex.printStackTrace();
+//									}
+//								});
+//			}
 			
 			System.out.printf("Balances after:\n\t%s: %s\n\t%s: %s\n\t%s: %s\n\t%s: %s\n",
-							  account1, bank.getBalance(account1),
-							  account2, bank.getBalance(account2),
-							  account3, bank.getBalance(account3),
-							  account4, bank.getBalance(account4));
+							  account1, bank.accountGetBalance(account1),
+							  account2, bank.accountGetBalance(account2),
+							  account3, bank.accountGetBalance(account3),
+							  account4, bank.accountGetBalance(account4));
 		}
 		catch (Throwable ex)
 		{
@@ -76,16 +77,18 @@ public class DevTesting
 		}
 	}
 	
-	private static void transfer(Bank bank, BankAccount source, BankAccount destination, double amount)
+	private static TransferResult transfer(Bank bank, BankAccount source, BankAccount destination, double amount)
 	{
 		try
 		{
-			bank.transferAmount(source, destination, Amount.fromDouble(amount));
+			return bank.transferAmount(source, destination, Amount.fromDouble(amount));
 		}
-		catch (BankInternalError ex)
+		catch (BankInternalError | BankAccountNotFound ex)
 		{
 			ex.printStackTrace();
 		}
+		
+		return null;
 	}
 	
 	private static BankAccountDescription getBAD(String description, double initialBalance)

@@ -1,4 +1,4 @@
-package rafalk42.rockefeller;
+package rafalk42.bank.rockefeller;
 
 import rafalk42.bank.domain.BankAccount;
 

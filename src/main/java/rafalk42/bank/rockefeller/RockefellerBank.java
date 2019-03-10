@@ -1,14 +1,18 @@
-package rafalk42.rockefeller;
+package rafalk42.bank.rockefeller;
 
 import rafalk42.bank.domain.*;
 import rafalk42.dao.AccountDao;
 import rafalk42.dao.AccountDaoInternalError;
+import rafalk42.dao.AccountInfo;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 
 public class RockefellerBank
@@ -54,10 +58,54 @@ public class RockefellerBank
 	}
 	
 	@Override
-	public Set<BankAccount> getAccountsAll()
+	public Set<BankAccount> accountsGetAll()
 			throws BankInternalError
 	{
-		return null;
+		try
+		{
+			transactionLock.lock();
+			
+			Set<AccountInfo> allAccounts = accountDao.findAll();
+			
+			return allAccounts.stream()
+							  .map(accountInfo -> new RockefellerBankAccount(accountInfo.getId()))
+							  .collect(Collectors.toSet());
+		}
+		catch (AccountDaoInternalError ex)
+		{
+			throw new BankInternalError(ex);
+		}
+		finally
+		{
+			transactionLock.unlock();
+		}
+	}
+	
+	@Override
+	public Map<BankAccount, BankAccountInfo> accountsGetInfoAll()
+			throws BankInternalError
+	{
+		try
+		{
+			transactionLock.lock();
+			
+			Set<AccountInfo> allAccounts = accountDao.findAll();
+			
+			Map<BankAccount, BankAccountInfo> result = new HashMap<>();
+			allAccounts.forEach(item -> result.put(new RockefellerBankAccount(item.getId()),
+												   new BankAccountInfo(item.getDescription(),
+																	   Amount.fromBigDecimal(item.getBalance()))));
+			
+			return result;
+		}
+		catch (AccountDaoInternalError ex)
+		{
+			throw new BankInternalError(ex);
+		}
+		finally
+		{
+			transactionLock.unlock();
+		}
 	}
 	
 	@Override
@@ -86,8 +134,8 @@ public class RockefellerBank
 	}
 	
 	@Override
-	public Amount getBalance(BankAccount account)
-			throws BankInternalError
+	public BankAccountInfo accountGetInfo(BankAccount account)
+			throws BankInternalError, BankAccountNotFound
 	{
 		verifyBankAccountImplementation(account);
 		
@@ -96,7 +144,42 @@ public class RockefellerBank
 			transactionLock.lock();
 			
 			String accountId = account.getId();
-			accountDao.doesItExist(accountId);
+			if (!accountDao.doesItExist(accountId))
+			{
+				throw new BankAccountNotFound(accountId);
+			}
+			
+			AccountInfo info = accountDao.getInfo(accountId);
+			
+			return new BankAccountInfo(info.getDescription(),
+									   Amount.fromBigDecimal(info.getBalance()));
+		}
+		catch (AccountDaoInternalError ex)
+		{
+			throw new BankInternalError(ex);
+		}
+		finally
+		{
+			transactionLock.unlock();
+		}
+	}
+	
+	@Override
+	public Amount accountGetBalance(BankAccount account)
+			throws BankInternalError, BankAccountNotFound
+	{
+		verifyBankAccountImplementation(account);
+		
+		try
+		{
+			transactionLock.lock();
+			
+			String accountId = account.getId();
+			if (!accountDao.doesItExist(accountId))
+			{
+				throw new BankAccountNotFound(accountId);
+			}
+			
 			BigDecimal balance = accountDao.getBalance(accountId);
 			
 			return Amount.fromBigDecimal(balance);
@@ -113,10 +196,15 @@ public class RockefellerBank
 	
 	@Override
 	public TransferResult transferAmount(BankAccount sourceAccount, BankAccount destinationAccount, Amount amount)
-			throws BankInternalError
+			throws BankInternalError, BankAccountNotFound
 	{
 		verifyBankAccountImplementation(sourceAccount);
 		verifyBankAccountImplementation(destinationAccount);
+		
+		if (amount == null)
+		{
+			throw new IllegalArgumentException("Amount cannot be null");
+		}
 		
 		try
 		{
@@ -124,11 +212,21 @@ public class RockefellerBank
 			String destinationAccountId = destinationAccount.getId();
 			BigDecimal amountToTransfer = amount.getAsBigDecimal();
 			
+			if (!accountDao.doesItExist(sourceAccountId))
+			{
+				throw new BankAccountNotFound(sourceAccountId);
+			}
+			
+			if (!accountDao.doesItExist(destinationAccountId))
+			{
+				throw new BankAccountNotFound(destinationAccountId);
+			}
+			
 			transactionLock.lock();
-
-			return doTransfer(sourceAccountId,
-							  destinationAccountId,
-							  amountToTransfer);
+			
+			return executeTransfer(sourceAccountId,
+								   destinationAccountId,
+								   amountToTransfer);
 		}
 		catch (AccountDaoInternalError ex)
 		{
@@ -154,7 +252,7 @@ public class RockefellerBank
 	 * @param amount               amount to transfer
 	 * @throws AccountDaoInternalError thrown when underlying DAO failed due to unknown error
 	 */
-	private TransferResult doTransfer(String sourceAccountId, String destinationAccountId, BigDecimal amount)
+	private TransferResult executeTransfer(String sourceAccountId, String destinationAccountId, BigDecimal amount)
 			throws AccountDaoInternalError
 	{
 		// Verify assumption #1.
@@ -163,11 +261,11 @@ public class RockefellerBank
 			return TransferResult.getInvalidAmount();
 		}
 		
-		// check current balances
+		// Check current balances.
 		BigDecimal beforeSourceBalance = accountDao.getBalance(sourceAccountId);
 		BigDecimal beforeDestinationBalance = accountDao.getBalance(destinationAccountId);
 		
-		// calculate new balances
+		// Calculate new balances.
 		BigDecimal afterSourceBalance = beforeSourceBalance.subtract(amount);
 		BigDecimal afterDestinationBalance = beforeDestinationBalance.add(amount);
 		
@@ -177,15 +275,16 @@ public class RockefellerBank
 			return TransferResult.getNotEnoughFunds();
 		}
 		
+		// Update balance on both accounts.
 		accountDao.setBalance(sourceAccountId, afterSourceBalance);
 		accountDao.setBalance(destinationAccountId, afterDestinationBalance);
 		
-		return TransferResult.getOk();
+		return TransferResult.getSuccessful();
 	}
 	
 	@Override
-	public ClosureResult close(BankAccount account)
-			throws BankInternalError
+	public void accountClose(BankAccount account)
+			throws BankInternalError, BankAccountNotFound
 	{
 		verifyBankAccountImplementation(account);
 		
@@ -193,9 +292,14 @@ public class RockefellerBank
 		{
 			transactionLock.lock();
 			
-			accountDao.close(account.getId());
+			String accountId = account.getId();
 			
-			return new ClosureResult();
+			if (!accountDao.doesItExist(accountId))
+			{
+				throw new BankAccountNotFound(accountId);
+			}
+			
+			accountDao.close(accountId);
 		}
 		catch (AccountDaoInternalError ex)
 		{
@@ -209,6 +313,11 @@ public class RockefellerBank
 	
 	private void verifyBankAccountImplementation(BankAccount bankAccount)
 	{
+		if (bankAccount == null)
+		{
+			throw new IllegalArgumentException("Bank account cannot be null");
+		}
+		
 		if (!(bankAccount instanceof RockefellerBankAccount))
 		{
 			throw new IllegalArgumentException("Unsupported implementation of BankAccount");

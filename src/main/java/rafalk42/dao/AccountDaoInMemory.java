@@ -48,6 +48,11 @@ public class AccountDaoInMemory
 	public boolean doesItExist(String accountId)
 			throws AccountDaoInternalError
 	{
+		if (accountId == null)
+		{
+			throw new IllegalArgumentException("Account ID cannot be null");
+		}
+		
 		return accounts.containsKey(accountId);
 	}
 	

@@ -27,17 +27,17 @@ public class AccountInfo
 		this.balance = balance;
 	}
 	
-	String getId()
+	public String getId()
 	{
 		return id;
 	}
 	
-	String getDescription()
+	public String getDescription()
 	{
 		return description;
 	}
 	
-	BigDecimal getBalance()
+	public BigDecimal getBalance()
 	{
 		return balance;
 	}

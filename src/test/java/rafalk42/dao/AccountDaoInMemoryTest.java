@@ -141,6 +141,13 @@ public class AccountDaoInMemoryTest
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
+	public void doesItExistWithNullAccountId()
+			throws AccountDaoInternalError
+	{
+		dao.doesItExist(null);
+	}
+
+	@Test(expected = IllegalArgumentException.class)
 	public void getInfoWithNullAccountId()
 			throws AccountDaoInternalError
 	{

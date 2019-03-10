@@ -5,8 +5,8 @@ public class TransferResult
 	public enum Status
 	{
 		SUCCESSFUL,
-		INVALID_AMOUNT,
-		NOT_ENOUGH_FUNDS
+		FAILED_INVALID_AMOUNT,
+		FAILED_NOT_ENOUGH_FUNDS
 	}
 	
 	private final Status status;
@@ -16,18 +16,26 @@ public class TransferResult
 		this.status = status;
 	}
 	
-	public static TransferResult getOk()
+	public static TransferResult getSuccessful()
 	{
 		return new TransferResult(Status.SUCCESSFUL);
 	}
 	
 	public static TransferResult getNotEnoughFunds()
 	{
-		return new TransferResult(Status.NOT_ENOUGH_FUNDS);
+		return new TransferResult(Status.FAILED_NOT_ENOUGH_FUNDS);
 	}
 	
 	public static TransferResult getInvalidAmount()
 	{
-		return new TransferResult(Status.INVALID_AMOUNT);
+		return new TransferResult(Status.FAILED_INVALID_AMOUNT);
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "TransferResult{" +
+				"status=" + status +
+				'}';
 	}
 }

@@ -1,5 +1,6 @@
 package rafalk42.bank.domain;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -9,18 +10,24 @@ public interface Bank
 	BankAccount accountCreate(BankAccountDescription accountDescription)
 			throws BankInternalError;
 	
-	Set<BankAccount> getAccountsAll()
+	Set<BankAccount> accountsGetAll()
+			throws BankInternalError;
+	
+	Map<BankAccount, BankAccountInfo> accountsGetInfoAll()
 			throws BankInternalError;
 	
 	Optional<BankAccount> accountFindById(String accountId)
 			throws BankInternalError;
 	
-	Amount getBalance(BankAccount account)
-			throws BankInternalError;
+	BankAccountInfo accountGetInfo(BankAccount account)
+			throws BankInternalError, BankAccountNotFound;
+	
+	Amount accountGetBalance(BankAccount account)
+			throws BankInternalError, BankAccountNotFound;
 	
 	TransferResult transferAmount(BankAccount sourceAccount, BankAccount destinationAccount, Amount amount)
-			throws BankInternalError;
+			throws BankInternalError, BankAccountNotFound;
 	
-	ClosureResult close(BankAccount account)
-			throws BankInternalError;
+	void accountClose(BankAccount account)
+			throws BankInternalError, BankAccountNotFound;
 }
