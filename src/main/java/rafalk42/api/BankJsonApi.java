@@ -34,7 +34,6 @@ public class BankJsonApi
 	String accountOpen(String accountDescriptionJson)
 			throws BankJsonApiInternalError, BankJsonApiInvalidParameter
 	{
-		// TODO: add input data validation
 		try
 		{
 			AccountDescriptionDto accountDescription = gson.fromJson(accountDescriptionJson, AccountDescriptionDto.class);
@@ -102,7 +101,8 @@ public class BankJsonApi
 			
 			if (!bankAccount.isPresent())
 			{
-				throw new BankJsonApiEntityNotFound();
+				throw new BankJsonApiEntityNotFound(String.format("Account ID %s not found",
+																  id));
 			}
 			
 			BankAccountInfo bankAccountInfo = bank.accountGetInfo(bankAccount.get());
@@ -114,7 +114,8 @@ public class BankJsonApi
 		}
 		catch (BankAccountNotFound ex)
 		{
-			throw new BankJsonApiEntityNotFound(ex);
+			throw new BankJsonApiEntityNotFound(String.format("Account ID %s not found",
+															  ex.getAccountId()));
 		}
 		catch (BankJsonApiEntityNotFound ex)
 		{
@@ -135,7 +136,8 @@ public class BankJsonApi
 			
 			if (!bankAccount.isPresent())
 			{
-				throw new BankJsonApiEntityNotFound();
+				throw new BankJsonApiEntityNotFound(String.format("Account ID %s not found",
+																  id));
 			}
 			
 			BankAccountInfo bankAccountInfo = bank.accountGetInfo(bankAccount.get());
@@ -145,7 +147,8 @@ public class BankJsonApi
 		}
 		catch (BankAccountNotFound ex)
 		{
-			throw new BankJsonApiEntityNotFound(ex);
+			throw new BankJsonApiEntityNotFound(String.format("Account ID %s not found",
+															  ex.getAccountId()));
 		}
 		catch (BankJsonApiEntityNotFound ex)
 		{
@@ -166,7 +169,8 @@ public class BankJsonApi
 			
 			if (!bankAccount.isPresent())
 			{
-				throw new BankJsonApiEntityNotFound();
+				throw new BankJsonApiEntityNotFound(String.format("Account ID %s not found",
+																  id));
 			}
 			
 			bank.accountClose(bankAccount.get());
@@ -175,7 +179,8 @@ public class BankJsonApi
 		}
 		catch (BankAccountNotFound ex)
 		{
-			throw new BankJsonApiEntityNotFound(ex);
+			throw new BankJsonApiEntityNotFound(String.format("Account ID %s not found",
+															  ex.getAccountId()));
 		}
 		catch (BankJsonApiEntityNotFound ex)
 		{
@@ -239,7 +244,8 @@ public class BankJsonApi
 		}
 		catch (BankAccountNotFound ex)
 		{
-			throw new BankJsonApiEntityNotFound(ex);
+			throw new BankJsonApiEntityNotFound(String.format("Account ID %s not found",
+															  ex.getAccountId()));
 		}
 		catch (BankJsonApiInvalidParameter ex)
 		{

@@ -2,7 +2,7 @@ package rafalk42.api;
 
 
 class BankJsonApiInternalError
-		extends Throwable
+		extends Exception
 {
 	BankJsonApiInternalError(Throwable cause)
 	{

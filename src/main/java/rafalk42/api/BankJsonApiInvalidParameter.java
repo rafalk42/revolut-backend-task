@@ -1,7 +1,7 @@
 package rafalk42.api;
 
 class BankJsonApiInvalidParameter
-		extends Throwable
+		extends Exception
 {
 	BankJsonApiInvalidParameter(String message)
 	{
