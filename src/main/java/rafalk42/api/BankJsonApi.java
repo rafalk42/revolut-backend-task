@@ -46,7 +46,7 @@ public class BankJsonApi
 			
 			BankAccountDescription bankAccountDescription = new BankAccountDescription.Builder()
 					.description(accountDescription.getDescription())
-					.initialBalance(Amount.fromBigDecimal(accountDescription.getInitialBalance()))
+					.initialBalance(accountDescription.getInitialBalance())
 					.build();
 			
 			BankAccount bankAccount = bank.accountCreate(bankAccountDescription);
@@ -82,8 +82,7 @@ public class BankJsonApi
 													 entry.getValue()
 															 .getDescription(),
 													 entry.getValue()
-															 .getBalance()
-															 .getAsBigDecimal()))
+															 .getBalance()))
 					.collect(Collectors.toList());
 			
 			return gson.toJson(result);
@@ -109,7 +108,7 @@ public class BankJsonApi
 			BankAccountInfo bankAccountInfo = bank.accountGetInfo(bankAccount.get());
 			AccountInfoDto accountInfo = new AccountInfoDto(id,
 															bankAccountInfo.getDescription(),
-															bankAccountInfo.getBalance().getAsBigDecimal());
+															bankAccountInfo.getBalance());
 			
 			return gson.toJson(accountInfo);
 		}
@@ -140,7 +139,7 @@ public class BankJsonApi
 			}
 			
 			BankAccountInfo bankAccountInfo = bank.accountGetInfo(bankAccount.get());
-			AccountBalanceDto accountBalance = new AccountBalanceDto(bankAccountInfo.getBalance().getAsBigDecimal());
+			AccountBalanceDto accountBalance = new AccountBalanceDto(bankAccountInfo.getBalance());
 			
 			return gson.toJson(accountBalance);
 		}
@@ -191,7 +190,6 @@ public class BankJsonApi
 	String transferExecute(String transferDescriptionJson)
 			throws BankJsonApiInternalError, BankJsonApiEntityNotFound, BankJsonApiInvalidParameter
 	{
-		// TODO: add input data validation
 		try
 		{
 			TransferDescriptionDto transferDescription = gson.fromJson(transferDescriptionJson, TransferDescriptionDto.class);
@@ -213,7 +211,7 @@ public class BankJsonApi
 			
 			Optional<BankAccount> sourceBankAccount = bank.accountFindById(transferDescription.getSourceAccountId());
 			Optional<BankAccount> destinationBankAccount = bank.accountFindById(transferDescription.getDestinationAccountId());
-			Amount amount = Amount.fromBigDecimal(transferDescription.getAmount());
+			BigDecimal amount = transferDescription.getAmount();
 			
 			if (!sourceBankAccount.isPresent())
 			{
@@ -230,6 +228,7 @@ public class BankJsonApi
 																amount);
 			
 			TransferResultDto result = new TransferResultDto(transferDescription,
+															 transferResult.getActualAmount(),
 															 transferResult.getStatusString());
 			
 			return gson.toJson(result);

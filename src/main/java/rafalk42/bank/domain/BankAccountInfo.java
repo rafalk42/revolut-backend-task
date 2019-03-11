@@ -1,11 +1,14 @@
 package rafalk42.bank.domain;
 
+import java.math.BigDecimal;
+
+
 public class BankAccountInfo
 {
 	private final String description;
-	private final Amount balance;
+	private final BigDecimal balance;
 	
-	public BankAccountInfo(String description, Amount balance)
+	public BankAccountInfo(String description, BigDecimal balance)
 	{
 		this.description = description;
 		this.balance = balance;
@@ -16,8 +19,17 @@ public class BankAccountInfo
 		return description;
 	}
 	
-	public Amount getBalance()
+	public BigDecimal getBalance()
 	{
 		return balance;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "BankAccountInfo{" +
+			   "description='" + description + '\'' +
+			   ", balance=" + balance +
+			   '}';
 	}
 }

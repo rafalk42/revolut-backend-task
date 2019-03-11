@@ -2,7 +2,6 @@ package rafalk42.bank.rockefeller;
 
 import org.junit.Before;
 import org.junit.Test;
-import rafalk42.bank.domain.Amount;
 import rafalk42.bank.domain.BankAccount;
 import rafalk42.bank.domain.BankAccountDescription;
 import rafalk42.bank.domain.BankInternalError;
@@ -32,7 +31,7 @@ public class RockefellerBankTest
 	{
 		BankAccountDescription accountDescription = new BankAccountDescription.Builder()
 				.description("Paycheck")
-				.initialBalance(Amount.fromDouble(75000))
+				.initialBalance(75000)
 				.build();
 		
 		BankAccount account = bank.accountCreate(accountDescription);

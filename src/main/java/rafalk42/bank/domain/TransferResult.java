@@ -1,5 +1,8 @@
 package rafalk42.bank.domain;
 
+import java.math.BigDecimal;
+
+
 public class TransferResult
 {
 	public enum Status
@@ -11,30 +14,32 @@ public class TransferResult
 	}
 	
 	private final Status status;
+	private final BigDecimal actualAmount;
 	
-	public TransferResult(Status status)
+	private TransferResult(Status status, BigDecimal actualAmount)
 	{
 		this.status = status;
+		this.actualAmount = actualAmount;
 	}
 	
-	public static TransferResult getSuccessful()
+	public static TransferResult getSuccessful(BigDecimal actualAmount)
 	{
-		return new TransferResult(Status.SUCCESSFUL);
+		return new TransferResult(Status.SUCCESSFUL, actualAmount);
 	}
 	
-	public static TransferResult getNotEnoughFunds()
+	public static TransferResult getNotEnoughFunds(BigDecimal actualAmount)
 	{
-		return new TransferResult(Status.FAILED_NOT_ENOUGH_FUNDS);
+		return new TransferResult(Status.FAILED_NOT_ENOUGH_FUNDS, actualAmount);
 	}
 	
-	public static TransferResult getInvalidAmount()
+	public static TransferResult getInvalidAmount(BigDecimal actualAmount)
 	{
-		return new TransferResult(Status.FAILED_INVALID_AMOUNT);
+		return new TransferResult(Status.FAILED_INVALID_AMOUNT, actualAmount);
 	}
 	
-	public static TransferResult getNotAllowed()
+	public static TransferResult getNotAllowed(BigDecimal actualAmount)
 	{
-		return new TransferResult(Status.FAILED_NOT_ALLOWED);
+		return new TransferResult(Status.FAILED_NOT_ALLOWED, actualAmount);
 	}
 	
 	public String getStatusString()
@@ -42,11 +47,17 @@ public class TransferResult
 		return status.name();
 	}
 	
+	public BigDecimal getActualAmount()
+	{
+		return actualAmount;
+	}
+	
 	@Override
 	public String toString()
 	{
 		return "TransferResult{" +
 			   "status=" + status +
+			   ", actualAmount=" + actualAmount +
 			   '}';
 	}
 }

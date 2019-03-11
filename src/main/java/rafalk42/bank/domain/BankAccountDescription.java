@@ -1,11 +1,14 @@
 package rafalk42.bank.domain;
 
+import java.math.BigDecimal;
+
+
 public class BankAccountDescription
 {
 	private final String description;
-	private final Amount initialBalance;
+	private final BigDecimal initialBalance;
 	
-	private BankAccountDescription(String description, Amount initialBalance)
+	private BankAccountDescription(String description, BigDecimal initialBalance)
 	{
 		this.description = description;
 		this.initialBalance = initialBalance;
@@ -16,7 +19,7 @@ public class BankAccountDescription
 		return description;
 	}
 	
-	public Amount getInitialBalance()
+	public BigDecimal getInitialBalance()
 	{
 		return initialBalance;
 	}
@@ -24,7 +27,7 @@ public class BankAccountDescription
 	public static class Builder
 	{
 		private String description;
-		private Amount initialAmount;
+		private BigDecimal initialAmount;
 		
 		public Builder()
 		{
@@ -39,7 +42,7 @@ public class BankAccountDescription
 			return this;
 		}
 		
-		public Builder initialBalance(Amount initialAmount)
+		public Builder initialBalance(BigDecimal initialAmount)
 		{
 			this.initialAmount = initialAmount;
 			
@@ -50,5 +53,21 @@ public class BankAccountDescription
 		{
 			return new BankAccountDescription(description, initialAmount);
 		}
+		
+		public Builder initialBalance(double initialAmount)
+		{
+			this.initialAmount = BigDecimal.valueOf(initialAmount);
+			
+			return this;
+		}
+	}
+	
+	@Override
+	public String toString()
+	{
+		return "BankAccountDescription{" +
+			   "description='" + description + '\'' +
+			   ", initialBalance=" + initialBalance +
+			   '}';
 	}
 }

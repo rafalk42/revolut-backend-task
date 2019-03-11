@@ -81,7 +81,7 @@ public class DevTesting
 	{
 		try
 		{
-			return bank.transferAmount(source, destination, Amount.fromDouble(amount));
+			return bank.transferAmount(source, destination, BigDecimal.valueOf(amount));
 		}
 		catch (BankInternalError | BankAccountNotFound ex)
 		{
@@ -95,7 +95,7 @@ public class DevTesting
 	{
 		return new BankAccountDescription.Builder()
 				.description(description)
-				.initialBalance(Amount.fromBigDecimal(BigDecimal.valueOf(initialBalance)))
+				.initialBalance(BigDecimal.valueOf(initialBalance))
 				.build();
 	}
 }
