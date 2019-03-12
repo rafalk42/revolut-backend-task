@@ -42,9 +42,9 @@ public class TransferResult
 		return new TransferResult(Status.FAILED_NOT_ALLOWED, actualAmount);
 	}
 	
-	public String getStatusString()
+	public Status getStatus()
 	{
-		return status.name();
+		return status;
 	}
 	
 	public BigDecimal getActualAmount()

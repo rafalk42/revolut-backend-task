@@ -11,9 +11,6 @@ public interface Bank
 	BankAccount accountCreate(BankAccountDescription accountDescription)
 			throws BankInternalError;
 	
-	Set<BankAccount> accountsGetAll()
-			throws BankInternalError;
-	
 	Map<BankAccount, BankAccountInfo> accountsGetInfoAll()
 			throws BankInternalError;
 	

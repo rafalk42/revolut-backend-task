@@ -53,13 +53,6 @@ public class BankAccountDescription
 		{
 			return new BankAccountDescription(description, initialAmount);
 		}
-		
-		public Builder initialBalance(double initialAmount)
-		{
-			this.initialAmount = BigDecimal.valueOf(initialAmount);
-			
-			return this;
-		}
 	}
 	
 	@Override

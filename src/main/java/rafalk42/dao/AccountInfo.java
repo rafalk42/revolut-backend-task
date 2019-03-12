@@ -10,7 +10,7 @@ public class AccountInfo
 	private final String description;
 	private final BigDecimal balance;
 	
-	AccountInfo(String id, String description, BigDecimal balance)
+	public AccountInfo(String id, String description, BigDecimal balance)
 	{
 		if (id == null)
 		{

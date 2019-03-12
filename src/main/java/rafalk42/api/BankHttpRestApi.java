@@ -1,6 +1,7 @@
 package rafalk42.api;
 
 import com.google.gson.Gson;
+import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -9,6 +10,7 @@ import spark.Spark;
 
 public class BankHttpRestApi
 {
+	final org.slf4j.Logger log = LoggerFactory.getLogger(BankHttpRestApi.class);
 	private final BankJsonApi bankJsonApi;
 	private final Gson gson;
 	
@@ -21,6 +23,8 @@ public class BankHttpRestApi
 	
 	public void start()
 	{
+		log.info("Starting HTTP server");
+		
 		Spark.ipAddress("0.0.0.0");
 //		Spark.port(listenPort);
 		
@@ -29,6 +33,8 @@ public class BankHttpRestApi
 		configureRoutes();
 		
 		Spark.awaitInitialization();
+		
+		log.info("HTTP server ready");
 	}
 	
 	private void configureRoutes()
@@ -46,6 +52,7 @@ public class BankHttpRestApi
 		// Set default returned content type to JSON.
 		Spark.before((request, response) -> response.type(defaultContentType));
 		
+		Spark.before(this::logRequest);
 		Spark.path("/bank", () ->
 		{
 			Spark.path("/accounts", () ->
@@ -59,8 +66,12 @@ public class BankHttpRestApi
 				Spark.put("", defaultContentType, halterMethodNotAllowed);
 				Spark.patch("", defaultContentType, halterMethodNotAllowed);
 				Spark.delete("", defaultContentType, halterMethodNotAllowed);
+				
+				Spark.post("/:id", defaultContentType, halterMethodNotAllowed);
+				Spark.put("/:id", defaultContentType, halterMethodNotAllowed);
+				Spark.patch("/:id", defaultContentType, halterMethodNotAllowed);
 			});
-			Spark.path("/accounts", () ->
+			Spark.path("/transfers", () ->
 			{
 				Spark.post("", defaultContentType, this::transferExecute);
 				
@@ -75,6 +86,14 @@ public class BankHttpRestApi
 		Spark.exception(BankJsonApiInternalError.class, this::handleInternalError);
 		Spark.exception(BankJsonApiEntityNotFound.class, this::handleEntityNotFound);
 		Spark.exception(BankJsonApiInvalidParameter.class, this::handleInvalidParameter);
+	}
+	
+	private void logRequest(Request request, Response response)
+	{
+		log.info(String.format("HTTP request from %s: %s %s",
+							   request.ip(),
+							   request.requestMethod(),
+							   request.pathInfo()));
 	}
 	
 	private void handleInternalError(BankJsonApiInternalError ex, Request request, Response response)

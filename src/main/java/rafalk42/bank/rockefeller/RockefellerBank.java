@@ -63,30 +63,6 @@ public class RockefellerBank
 	}
 	
 	@Override
-	public Set<BankAccount> accountsGetAll()
-			throws BankInternalError
-	{
-		try
-		{
-			transactionLock.lock();
-			
-			Set<AccountInfo> allAccounts = accountDao.findAll();
-			
-			return allAccounts.stream()
-					.map(accountInfo -> new RockefellerBankAccount(accountInfo.getId()))
-					.collect(Collectors.toSet());
-		}
-		catch (AccountDaoInternalError ex)
-		{
-			throw new BankInternalError(ex);
-		}
-		finally
-		{
-			transactionLock.unlock();
-		}
-	}
-	
-	@Override
 	public Map<BankAccount, BankAccountInfo> accountsGetInfoAll()
 			throws BankInternalError
 	{
@@ -214,6 +190,8 @@ public class RockefellerBank
 			String sourceAccountId = sourceAccount.getId();
 			String destinationAccountId = destinationAccount.getId();
 			
+			transactionLock.lock();
+			
 			if (!accountDao.doesItExist(sourceAccountId))
 			{
 				throw new BankAccountNotFound(sourceAccountId);
@@ -223,8 +201,6 @@ public class RockefellerBank
 			{
 				throw new BankAccountNotFound(destinationAccountId);
 			}
-			
-			transactionLock.lock();
 			
 			return executeTransfer(sourceAccountId,
 								   destinationAccountId,

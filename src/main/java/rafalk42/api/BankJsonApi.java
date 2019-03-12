@@ -234,7 +234,7 @@ public class BankJsonApi
 			
 			TransferResultDto result = new TransferResultDto(transferDescription,
 															 transferResult.getActualAmount(),
-															 transferResult.getStatusString());
+															 transferResult.getStatus().name());
 			
 			return gson.toJson(result);
 		}
