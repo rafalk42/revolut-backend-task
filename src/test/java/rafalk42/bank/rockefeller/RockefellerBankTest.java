@@ -18,7 +18,9 @@ import static org.junit.Assert.assertTrue;
  * This is an incomplete suite of tests for the RockefellerBank implementation.
  * For brevity and due to time constrains, all error/failure scenarios have been omitted.
  * Also note that the method of testing used here - mock of the account DAO and deep introspection
- * of its use by the RockefellerBank - is tightly coupled with this particular Bank implementation.
+ * of its use by the RockefellerBank - is tightly coupled with this particular Bank implementation
+ * and relies heavily on the particular implementation details of RockefellerBank. I don't have
+ * any better idea about it at this point...
  */
 public class RockefellerBankTest
 {
@@ -126,6 +128,59 @@ public class RockefellerBankTest
 		assertEquals(accountDaoMock.getBalanceResult.size(), accountDaoMock.getBalanceCallCounter); // called once
 		assertEquals(exampleAccountId1, accountDaoMock.getBalanceAccountId.get(0)); // account ID matches
 		assertEquals(exampleBalance, accountDaoMock.getBalanceResult.get(0)); // account balance matches
+		assertEquals(exampleBalance, balance);
+	}
+	
+	@Test
+	public void accountDepositTest()
+			throws BankAccountNotFound, BankInternalError
+	{
+		accountDaoMock.doestItExistResult = Arrays.asList(Boolean.TRUE,
+														  Boolean.TRUE);
+		
+		accountDaoMock.getBalanceResult = Arrays.asList(exampleBalance);
+		
+		Optional<BankAccount> bankAccount = bank.accountFindById(exampleAccountId1);
+		OperationResult operationResult = bank.accountDeposit(bankAccount.get(),
+													 exampleAmount);
+		
+		assertEquals(accountDaoMock.doestItExistResult.size(), accountDaoMock.doestItExistCallCounter); // called twice (in findById and in accountDeposit)
+		assertEquals(accountDaoMock.getBalanceResult.size(), accountDaoMock.getBalanceCallCounter); // called once, in accountDeposit
+		assertEquals(1, accountDaoMock.setBalanceCallCounter); // called once, to set final amount in accountDeposit
+		
+		assertEquals(Arrays.asList(exampleAccountId1), accountDaoMock.setBalanceAccountId);
+		
+		BigDecimal expectedBalance = exampleBalance.add(exampleAmount);
+		assertEquals(Arrays.asList(expectedBalance), accountDaoMock.setBalanceNewBalance);
+		
+		assertEquals(OperationResult.Status.SUCCESSFUL, operationResult.getStatus());
+		assertEquals(exampleAmount, operationResult.getActualAmount());
+	}
+	
+	@Test
+	public void accountWithdrawTest()
+			throws BankAccountNotFound, BankInternalError
+	{
+		accountDaoMock.doestItExistResult = Arrays.asList(Boolean.TRUE,
+														  Boolean.TRUE);
+		
+		accountDaoMock.getBalanceResult = Arrays.asList(exampleBalance);
+		
+		Optional<BankAccount> bankAccount = bank.accountFindById(exampleAccountId1);
+		OperationResult operationResult = bank.accountWithdraw(bankAccount.get(),
+													 exampleAmount);
+		
+		assertEquals(accountDaoMock.doestItExistResult.size(), accountDaoMock.doestItExistCallCounter); // called twice (in findById and in accountWithdraw)
+		assertEquals(accountDaoMock.getBalanceResult.size(), accountDaoMock.getBalanceCallCounter); // called once, in accountWithdraw
+		assertEquals(1, accountDaoMock.setBalanceCallCounter); // called once, to set final amount in accountWithdraw
+		
+		assertEquals(Arrays.asList(exampleAccountId1), accountDaoMock.setBalanceAccountId);
+		
+		BigDecimal expectedBalance = exampleBalance.subtract(exampleAmount);
+		assertEquals(Arrays.asList(expectedBalance), accountDaoMock.setBalanceNewBalance);
+		
+		assertEquals(OperationResult.Status.SUCCESSFUL, operationResult.getStatus());
+		assertEquals(exampleAmount, operationResult.getActualAmount());
 	}
 	
 	@Test
@@ -141,9 +196,9 @@ public class RockefellerBankTest
 		
 		Optional<BankAccount> sourceAccount = bank.accountFindById(exampleAccountId1);
 		Optional<BankAccount> destinationAccount = bank.accountFindById(exampleAccountId2);
-		TransferResult transferResult = bank.transferAmount(sourceAccount.get(), // no need to check ifPresent
-															destinationAccount.get(), // no need to check ifPresent
-															exampleAmount);
+		OperationResult operationResult = bank.transferAmount(sourceAccount.get(), // no need to check ifPresent
+															  destinationAccount.get(), // no need to check ifPresent
+															  exampleAmount);
 		
 		assertEquals(accountDaoMock.doestItExistResult.size(), accountDaoMock.doestItExistCallCounter); // called four times (twice in findById and twice in transferAmount)
 		assertEquals(accountDaoMock.getBalanceResult.size(), accountDaoMock.getBalanceCallCounter); // called twice, once for each account
@@ -156,8 +211,8 @@ public class RockefellerBankTest
 		BigDecimal expectedBalance2 = exampleBalance.add(exampleAmount);
 		assertEquals(Arrays.asList(expectedBalance1,
 								   expectedBalance2), accountDaoMock.setBalanceNewBalance); // account balances match
-		assertEquals(TransferResult.Status.SUCCESSFUL, transferResult.getStatus());
-		assertEquals(exampleAmount, transferResult.getActualAmount());
+		assertEquals(OperationResult.Status.SUCCESSFUL, operationResult.getStatus());
+		assertEquals(exampleAmount, operationResult.getActualAmount());
 	}
 	
 	@Test

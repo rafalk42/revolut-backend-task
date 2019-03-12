@@ -37,7 +37,7 @@ public class DevTesting
 							  account3, bank.accountGetBalance(account3),
 							  account4, bank.accountGetBalance(account4));
 			
-			TransferResult result = transfer(bank, account4, account1, 1000.00);
+			OperationResult result = transfer(bank, account4, account1, 1000.00);
 			
 			System.out.println(result);
 
@@ -77,7 +77,7 @@ public class DevTesting
 		}
 	}
 	
-	private static TransferResult transfer(Bank bank, BankAccount source, BankAccount destination, double amount)
+	private static OperationResult transfer(Bank bank, BankAccount source, BankAccount destination, double amount)
 	{
 		try
 		{

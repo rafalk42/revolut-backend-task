@@ -3,9 +3,11 @@ package rafalk42.bank.domain;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 
+/**
+ *
+ */
 public interface Bank
 {
 	BankAccount accountCreate(BankAccountDescription accountDescription)
@@ -23,7 +25,13 @@ public interface Bank
 	BigDecimal accountGetBalance(BankAccount account)
 			throws BankInternalError, BankAccountNotFound;
 	
-	TransferResult transferAmount(BankAccount sourceAccount, BankAccount destinationAccount, BigDecimal amount)
+	OperationResult accountDeposit(BankAccount account, BigDecimal amount)
+			throws BankInternalError, BankAccountNotFound;
+	
+	OperationResult accountWithdraw(BankAccount account, BigDecimal amount)
+			throws BankInternalError, BankAccountNotFound;
+	
+	OperationResult transferAmount(BankAccount sourceAccount, BankAccount destinationAccount, BigDecimal amount)
 			throws BankInternalError, BankAccountNotFound;
 	
 	void accountClose(BankAccount account)

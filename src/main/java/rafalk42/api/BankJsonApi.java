@@ -228,13 +228,13 @@ public class BankJsonApi
 				throw new BankJsonApiInvalidParameter("Destination account not found");
 			}
 			
-			TransferResult transferResult = bank.transferAmount(sourceBankAccount.get(),
-																destinationBankAccount.get(),
-																amount);
+			OperationResult operationResult = bank.transferAmount(sourceBankAccount.get(),
+																  destinationBankAccount.get(),
+																  amount);
 			
 			TransferResultDto result = new TransferResultDto(transferDescription,
-															 transferResult.getActualAmount(),
-															 transferResult.getStatus().name());
+															 operationResult.getActualAmount(),
+															 operationResult.getStatus().name());
 			
 			return gson.toJson(result);
 		}

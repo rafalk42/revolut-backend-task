@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 
 public class RockefellerBank
@@ -174,7 +173,77 @@ public class RockefellerBank
 	}
 	
 	@Override
-	public TransferResult transferAmount(BankAccount sourceAccount, BankAccount destinationAccount, BigDecimal amount)
+	public OperationResult accountDeposit(BankAccount account, BigDecimal amount)
+			throws BankInternalError, BankAccountNotFound
+	{
+		verifyBankAccountImplementation(account);
+		
+		if (amount == null)
+		{
+			throw new IllegalArgumentException("Amount cannot be null");
+		}
+		
+		try
+		{
+			String accountId = account.getId();
+			
+			transactionLock.lock();
+			
+			if (!accountDao.doesItExist(accountId))
+			{
+				throw new BankAccountNotFound(accountId);
+			}
+			
+			return executeDeposit(accountId,
+								  amount);
+		}
+		catch (AccountDaoInternalError ex)
+		{
+			throw new BankInternalError(ex);
+		}
+		finally
+		{
+			transactionLock.unlock();
+		}
+	}
+	
+	@Override
+	public OperationResult accountWithdraw(BankAccount account, BigDecimal amount)
+			throws BankInternalError, BankAccountNotFound
+	{
+		verifyBankAccountImplementation(account);
+		
+		if (amount == null)
+		{
+			throw new IllegalArgumentException("Amount cannot be null");
+		}
+		
+		try
+		{
+			String accountId = account.getId();
+			
+			transactionLock.lock();
+			
+			if (!accountDao.doesItExist(accountId))
+			{
+				throw new BankAccountNotFound(accountId);
+			}
+			
+			return executeWithdraw(accountId,
+								   amount);
+		}
+		catch (AccountDaoInternalError ex)
+		{
+			throw new BankInternalError(ex);
+		}
+		finally
+		{
+			transactionLock.unlock();
+		}
+	}
+	
+	@Override
+	public OperationResult transferAmount(BankAccount sourceAccount, BankAccount destinationAccount, BigDecimal amount)
 			throws BankInternalError, BankAccountNotFound
 	{
 		verifyBankAccountImplementation(sourceAccount);
@@ -217,6 +286,74 @@ public class RockefellerBank
 	}
 	
 	/**
+	 * For details see executeTransfer method.
+	 *
+	 * @param accountId account ID to which amount will be added
+	 * @param amount    amount to accountDeposit
+	 * @return result of this operation
+	 * @throws AccountDaoInternalError thrown when underlying DAO failed due to unknown error
+	 */
+	private OperationResult executeDeposit(String accountId, BigDecimal amount)
+			throws AccountDaoInternalError
+	{
+		// Verify assumption #2.
+		if (amount.compareTo(rulesMinimumTransferAmount) < 0)
+		{
+			return OperationResult.getInvalidAmount(amount);
+		}
+		
+		// Apply assumption #3.
+		BigDecimal amountRounded = amount.setScale(2, RoundingMode.HALF_UP);
+		
+		BigDecimal balanceBefore = accountDao.getBalance(accountId);
+		
+		// Calculate new balance.
+		BigDecimal balanceAfter = balanceBefore.add(amountRounded);
+		
+		// Update balance.
+		accountDao.setBalance(accountId, balanceAfter);
+		
+		return OperationResult.getSuccessful(amountRounded);
+	}
+	
+	/**
+	 * For details see executeTransfer method.
+	 *
+	 * @param accountId account ID from which amount will be subtracted
+	 * @param amount    amount to accountWithdraw
+	 * @return result of this operation
+	 * @throws AccountDaoInternalError thrown when underlying DAO failed due to unknown error
+	 */
+	private OperationResult executeWithdraw(String accountId, BigDecimal amount)
+			throws AccountDaoInternalError
+	{
+		// Verify assumption #2.
+		if (amount.compareTo(rulesMinimumTransferAmount) < 0)
+		{
+			return OperationResult.getInvalidAmount(amount);
+		}
+		
+		// Apply assumption #3.
+		BigDecimal amountRounded = amount.setScale(2, RoundingMode.HALF_UP);
+		
+		BigDecimal balanceBefore = accountDao.getBalance(accountId);
+		
+		// Calculate new balance.
+		BigDecimal balanceAfter = balanceBefore.subtract(amountRounded);
+		
+		// Verify assumption #4.
+		if (balanceAfter.compareTo(BigDecimal.ZERO) < 0)
+		{
+			return OperationResult.getNotEnoughFunds(amountRounded);
+		}
+		
+		// Update balance.
+		accountDao.setBalance(accountId, balanceAfter);
+		
+		return OperationResult.getSuccessful(amountRounded);
+	}
+	
+	/**
 	 * Actually execute the transfer. This method contains the business logic of a transfer.
 	 * Assumptions:
 	 * 1. source and destination account must be different,
@@ -230,45 +367,46 @@ public class RockefellerBank
 	 * @param sourceAccountId      account ID from which amount will be taken
 	 * @param destinationAccountId account ID to which amount will be added
 	 * @param amount               amount to transfer
+	 * @return result of this operation
 	 * @throws AccountDaoInternalError thrown when underlying DAO failed due to unknown error
 	 */
-	private TransferResult executeTransfer(String sourceAccountId, String destinationAccountId, BigDecimal amount)
+	private OperationResult executeTransfer(String sourceAccountId, String destinationAccountId, BigDecimal amount)
 			throws AccountDaoInternalError
 	{
 		// Verify assumption #1.
 		if (sourceAccountId.equals(destinationAccountId))
 		{
-			return TransferResult.getNotAllowed(amount);
+			return OperationResult.getNotAllowed(amount);
 		}
 		
 		// Verify assumption #2.
 		if (amount.compareTo(rulesMinimumTransferAmount) < 0)
 		{
-			return TransferResult.getInvalidAmount(amount);
+			return OperationResult.getInvalidAmount(amount);
 		}
 		
 		// Apply assumption #3.
 		BigDecimal amountRounded = amount.setScale(2, RoundingMode.HALF_UP);
 		
 		// Check current balances.
-		BigDecimal beforeSourceBalance = accountDao.getBalance(sourceAccountId);
-		BigDecimal beforeDestinationBalance = accountDao.getBalance(destinationAccountId);
+		BigDecimal balanceSourceBefore = accountDao.getBalance(sourceAccountId);
+		BigDecimal balanceDestinationBefore = accountDao.getBalance(destinationAccountId);
 		
 		// Calculate new balances.
-		BigDecimal afterSourceBalance = beforeSourceBalance.subtract(amountRounded);
-		BigDecimal afterDestinationBalance = beforeDestinationBalance.add(amountRounded);
+		BigDecimal balanceSourceAfter = balanceSourceBefore.subtract(amountRounded);
+		BigDecimal balanceDestinationAfter = balanceDestinationBefore.add(amountRounded);
 		
 		// Verify assumption #4.
-		if (afterSourceBalance.compareTo(BigDecimal.ZERO) < 0)
+		if (balanceSourceAfter.compareTo(BigDecimal.ZERO) < 0)
 		{
-			return TransferResult.getNotEnoughFunds(amountRounded);
+			return OperationResult.getNotEnoughFunds(amountRounded);
 		}
 		
 		// Update balance on both accounts.
-		accountDao.setBalance(sourceAccountId, afterSourceBalance);
-		accountDao.setBalance(destinationAccountId, afterDestinationBalance);
+		accountDao.setBalance(sourceAccountId, balanceSourceAfter);
+		accountDao.setBalance(destinationAccountId, balanceDestinationAfter);
 		
-		return TransferResult.getSuccessful(amountRounded);
+		return OperationResult.getSuccessful(amountRounded);
 	}
 	
 	@Override
