@@ -22,12 +22,12 @@ public class BankHttpRestApi
 		gson = new Gson();
 	}
 	
-	public void start()
+	public void start(String listenAddress, int listenPort)
 	{
 		log.info("Starting HTTP server");
 		
-		Spark.ipAddress("0.0.0.0");
-//		Spark.port(listenPort);
+		Spark.ipAddress(listenAddress);
+		Spark.port(listenPort);
 		
 		Spark.before((request, response) -> response.type("application/json"));
 		
