@@ -1,4 +1,4 @@
-package rafalk42.api;
+package rafalk42.api.dto;
 
 import java.math.BigDecimal;
 
@@ -19,7 +19,7 @@ public class AccountDescriptionDto
 		return description;
 	}
 	
-	BigDecimal getInitialBalance()
+	public BigDecimal getInitialBalance()
 	{
 		return initialBalance;
 	}

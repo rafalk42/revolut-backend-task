@@ -2,6 +2,7 @@ package rafalk42.api;
 
 import com.google.gson.Gson;
 import org.slf4j.LoggerFactory;
+import rafalk42.api.dto.ApiErrorDto;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -61,6 +62,8 @@ public class BankHttpRestApi
 				Spark.get("/:id", defaultContentType, this::accountGetInfo);
 				Spark.get("/:id/balance", defaultContentType, this::accountGetBalance);
 				Spark.post("", defaultContentType, this::accountOpen);
+				Spark.post("/:id/deposit", defaultContentType, this::accountDeposit);
+				Spark.post("/:id/withdraw", defaultContentType, this::accountWithdraw);
 				Spark.delete("/:id", defaultContentType, this::accountClose);
 				
 				Spark.put("", defaultContentType, halterMethodNotAllowed);
@@ -94,24 +97,6 @@ public class BankHttpRestApi
 							   request.ip(),
 							   request.requestMethod(),
 							   request.pathInfo()));
-	}
-	
-	private void handleInternalError(BankJsonApiInternalError ex, Request request, Response response)
-	{
-		response.status(HttpStatus.SERVER_ERROR_INTERNAL.get());
-		response.body(getErrorJson(ex.getMessage()));
-	}
-	
-	private void handleEntityNotFound(BankJsonApiEntityNotFound ex, Request request, Response response)
-	{
-		response.status(HttpStatus.CLIENT_ERROR_NOT_FOUND.get());
-		response.body(getErrorJson(ex.getMessage()));
-	}
-	
-	private void handleInvalidParameter(BankJsonApiInvalidParameter ex, Request request, Response response)
-	{
-		response.status(HttpStatus.CLIENT_ERROR_BAD_REQUEST.get());
-		response.body(getErrorJson(ex.getMessage()));
 	}
 	
 	private String accountsList(Request request, Response response)
@@ -152,12 +137,48 @@ public class BankHttpRestApi
 		return bankJsonApi.accountClose(id);
 	}
 	
+	private String accountDeposit(Request request, Response response)
+			throws BankJsonApiInternalError, BankJsonApiInvalidParameter, BankJsonApiEntityNotFound
+	{
+		String id = request.params("id");
+		String depositDescription = request.body();
+
+		return bankJsonApi.accountDeposit(id, depositDescription);
+	}
+	
+	private String accountWithdraw(Request request, Response response)
+			throws BankJsonApiInternalError, BankJsonApiInvalidParameter, BankJsonApiEntityNotFound
+	{
+		String id = request.params("id");
+		String withdrawDescription = request.body();
+		
+		return bankJsonApi.accountWithdraw(id, withdrawDescription);
+	}
+	
 	private String transferExecute(Request request, Response response)
 			throws BankJsonApiInternalError, BankJsonApiInvalidParameter, BankJsonApiEntityNotFound
 	{
 		String transferDescription = request.body();
 		
 		return bankJsonApi.transferExecute(transferDescription);
+	}
+	
+	private void handleInternalError(BankJsonApiInternalError ex, Request request, Response response)
+	{
+		response.status(HttpStatus.SERVER_ERROR_INTERNAL.get());
+		response.body(getErrorJson(ex.getMessage()));
+	}
+	
+	private void handleEntityNotFound(BankJsonApiEntityNotFound ex, Request request, Response response)
+	{
+		response.status(HttpStatus.CLIENT_ERROR_NOT_FOUND.get());
+		response.body(getErrorJson(ex.getMessage()));
+	}
+	
+	private void handleInvalidParameter(BankJsonApiInvalidParameter ex, Request request, Response response)
+	{
+		response.status(HttpStatus.CLIENT_ERROR_BAD_REQUEST.get());
+		response.body(getErrorJson(ex.getMessage()));
 	}
 	
 	private String getErrorJson(String message)

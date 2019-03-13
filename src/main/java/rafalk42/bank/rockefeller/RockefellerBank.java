@@ -173,7 +173,7 @@ public class RockefellerBank
 	}
 	
 	@Override
-	public OperationResult accountDeposit(BankAccount account, BigDecimal amount)
+	public OperationResult accountDeposit(BankAccount account, BigDecimal amount, String title)
 			throws BankInternalError, BankAccountNotFound
 	{
 		verifyBankAccountImplementation(account);
@@ -208,7 +208,7 @@ public class RockefellerBank
 	}
 	
 	@Override
-	public OperationResult accountWithdraw(BankAccount account, BigDecimal amount)
+	public OperationResult accountWithdraw(BankAccount account, BigDecimal amount, String title)
 			throws BankInternalError, BankAccountNotFound
 	{
 		verifyBankAccountImplementation(account);

@@ -1,15 +1,15 @@
-package rafalk42.api;
+package rafalk42.api.dto;
 
 import java.math.BigDecimal;
 
 
-class TransferResultDto
+public class TransferResultDto
 {
 	private final TransferDescriptionDto request;
 	private final BigDecimal actualAmount;
 	private final String result;
 	
-	TransferResultDto(TransferDescriptionDto request, BigDecimal actualAmount, String result)
+	public TransferResultDto(TransferDescriptionDto request, BigDecimal actualAmount, String result)
 	{
 		this.request = request;
 		this.actualAmount = actualAmount;

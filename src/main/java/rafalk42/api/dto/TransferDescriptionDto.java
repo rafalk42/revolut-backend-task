@@ -1,4 +1,4 @@
-package rafalk42.api;
+package rafalk42.api.dto;
 
 import java.math.BigDecimal;
 
@@ -16,17 +16,17 @@ public class TransferDescriptionDto
 		this.amount = amount;
 	}
 	
-	String getSourceAccountId()
+	public String getSourceAccountId()
 	{
 		return sourceAccountId;
 	}
 	
-	String getDestinationAccountId()
+	public String getDestinationAccountId()
 	{
 		return destinationAccountId;
 	}
 	
-	BigDecimal getAmount()
+	public BigDecimal getAmount()
 	{
 		return amount;
 	}

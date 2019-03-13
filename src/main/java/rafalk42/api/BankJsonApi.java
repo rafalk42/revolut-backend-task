@@ -6,6 +6,7 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
+import rafalk42.api.dto.*;
 import rafalk42.bank.domain.*;
 
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class BankJsonApi
 		
 		gson = new GsonBuilder().registerTypeAdapter(BigDecimal.class,
 													 new BigDecimalTypeAdapter())
-				.create();
+								.create();
 	}
 	
 	String accountOpen(String accountDescriptionJson)
@@ -76,13 +77,13 @@ public class BankJsonApi
 			Map<BankAccount, BankAccountInfo> bankAccounts = bank.accountsGetInfoAll();
 			
 			List<AccountInfoDto> result = bankAccounts.entrySet()
-					.stream()
-					.map(entry -> new AccountInfoDto(entry.getKey().getId(),
-													 entry.getValue()
-															 .getDescription(),
-													 entry.getValue()
-															 .getBalance()))
-					.collect(Collectors.toList());
+													  .stream()
+													  .map(entry -> new AccountInfoDto(entry.getKey().getId(),
+																					   entry.getValue()
+																							.getDescription(),
+																					   entry.getValue()
+																							.getBalance()))
+													  .collect(Collectors.toList());
 			
 			return gson.toJson(result);
 		}
@@ -192,6 +193,80 @@ public class BankJsonApi
 		}
 	}
 	
+	String accountDeposit(String id, String depositDescriptionJson)
+			throws BankJsonApiInternalError, BankJsonApiEntityNotFound, BankJsonApiInvalidParameter
+	{
+		return executeDepositOrWithdraw(id, depositDescriptionJson, bank::accountDeposit);
+	}
+	
+	String accountWithdraw(String id, String withdrawDescriptionJson)
+			throws BankJsonApiInternalError, BankJsonApiEntityNotFound, BankJsonApiInvalidParameter
+	{
+		return executeDepositOrWithdraw(id, withdrawDescriptionJson, bank::accountWithdraw);
+	}
+	
+	@FunctionalInterface
+	private interface Foo
+	{
+		OperationResult execute(BankAccount account, BigDecimal amount, String title)
+				throws BankInternalError, BankAccountNotFound;
+	}
+	
+	private String executeDepositOrWithdraw(String accountId, String depositWithdrawDescriptionJson, Foo operation)
+			throws BankJsonApiInternalError, BankJsonApiEntityNotFound, BankJsonApiInvalidParameter
+	{
+		try
+		{
+			DepositWithdrawDescriptionDto withdrawDescription = gson.fromJson(depositWithdrawDescriptionJson, DepositWithdrawDescriptionDto.class);
+			
+			if (accountId == null)
+			{
+				throw new BankJsonApiInvalidParameter("Missing parameter: accountId");
+			}
+			
+			if (withdrawDescription.getAmount() == null)
+			{
+				throw new BankJsonApiInvalidParameter("Missing parameter: amount");
+			}
+			
+			Optional<BankAccount> bankAccount = bank.accountFindById(accountId);
+			
+			if (!bankAccount.isPresent())
+			{
+				throw new BankJsonApiInvalidParameter("Account not found");
+			}
+
+//			OperationResult operationResult = bank.accountWithdraw(bankAccount.get(), withdrawDescription.getAmount());
+			OperationResult operationResult = operation.execute(bankAccount.get(),
+																withdrawDescription.getAmount(),
+																withdrawDescription.getTitle());
+			
+			DepositWithdrawResultDto result = new DepositWithdrawResultDto(withdrawDescription,
+																		   operationResult.getActualAmount(),
+																		   operationResult.getStatus().name());
+			
+			return gson.toJson(result);
+			
+		}
+		catch (JsonSyntaxException ex)
+		{
+			throw new BankJsonApiInvalidParameter("Request body is not a valid JSON format");
+		}
+		catch (BankAccountNotFound ex)
+		{
+			throw new BankJsonApiEntityNotFound(String.format("Account ID %s not found",
+															  ex.getAccountId()));
+		}
+		catch (BankJsonApiInvalidParameter ex)
+		{
+			throw ex;
+		}
+		catch (Throwable ex)
+		{
+			throw new BankJsonApiInternalError(ex);
+		}
+	}
+
 	String transferExecute(String transferDescriptionJson)
 			throws BankJsonApiInternalError, BankJsonApiEntityNotFound, BankJsonApiInvalidParameter
 	{

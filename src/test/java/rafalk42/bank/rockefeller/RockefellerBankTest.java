@@ -29,6 +29,7 @@ public class RockefellerBankTest
 	private final BigDecimal exampleAmount = BigDecimal.valueOf(100000, 2);
 	private final String exampleAccountId1 = "1234567890";
 	private final String exampleAccountId2 = "0987654321";
+	private final String exampleTitle = "None of your business!";
 	
 	private RockefellerBank bank;
 	private AccountDaoMock accountDaoMock;
@@ -142,7 +143,8 @@ public class RockefellerBankTest
 		
 		Optional<BankAccount> bankAccount = bank.accountFindById(exampleAccountId1);
 		OperationResult operationResult = bank.accountDeposit(bankAccount.get(),
-													 exampleAmount);
+															  exampleAmount,
+															  exampleTitle);
 		
 		assertEquals(accountDaoMock.doestItExistResult.size(), accountDaoMock.doestItExistCallCounter); // called twice (in findById and in accountDeposit)
 		assertEquals(accountDaoMock.getBalanceResult.size(), accountDaoMock.getBalanceCallCounter); // called once, in accountDeposit
@@ -168,7 +170,8 @@ public class RockefellerBankTest
 		
 		Optional<BankAccount> bankAccount = bank.accountFindById(exampleAccountId1);
 		OperationResult operationResult = bank.accountWithdraw(bankAccount.get(),
-													 exampleAmount);
+															   exampleAmount,
+															   exampleTitle);
 		
 		assertEquals(accountDaoMock.doestItExistResult.size(), accountDaoMock.doestItExistCallCounter); // called twice (in findById and in accountWithdraw)
 		assertEquals(accountDaoMock.getBalanceResult.size(), accountDaoMock.getBalanceCallCounter); // called once, in accountWithdraw
@@ -221,7 +224,7 @@ public class RockefellerBankTest
 	{
 		accountDaoMock.doestItExistResult = Arrays.asList(Boolean.TRUE,
 														  Boolean.TRUE);
-
+		
 		Optional<BankAccount> bankAccount = bank.accountFindById(exampleAccountId1);
 		bank.accountClose(bankAccount.get()); // no need to check ifPresent
 		

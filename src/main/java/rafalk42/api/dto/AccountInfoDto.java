@@ -1,15 +1,15 @@
-package rafalk42.api;
+package rafalk42.api.dto;
 
 import java.math.BigDecimal;
 
 
-class AccountInfoDto
+public class AccountInfoDto
 {
 	private final String id;
 	private final String description;
 	private final BigDecimal balance;
 	
-	AccountInfoDto(String id, String description, BigDecimal balance)
+	public AccountInfoDto(String id, String description, BigDecimal balance)
 	{
 		this.id = id;
 		this.description = description;

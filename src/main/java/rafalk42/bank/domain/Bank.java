@@ -25,10 +25,10 @@ public interface Bank
 	BigDecimal accountGetBalance(BankAccount account)
 			throws BankInternalError, BankAccountNotFound;
 	
-	OperationResult accountDeposit(BankAccount account, BigDecimal amount)
+	OperationResult accountDeposit(BankAccount account, BigDecimal amount, String title)
 			throws BankInternalError, BankAccountNotFound;
 	
-	OperationResult accountWithdraw(BankAccount account, BigDecimal amount)
+	OperationResult accountWithdraw(BankAccount account, BigDecimal amount, String title)
 			throws BankInternalError, BankAccountNotFound;
 	
 	OperationResult transferAmount(BankAccount sourceAccount, BankAccount destinationAccount, BigDecimal amount)

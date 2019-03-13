@@ -1,13 +1,13 @@
-package rafalk42.api;
+package rafalk42.api.dto;
 
 import java.math.BigDecimal;
 
 
-class AccountBalanceDto
+public class AccountBalanceDto
 {
 	private final BigDecimal balance;
 	
-	AccountBalanceDto(BigDecimal balance)
+	public AccountBalanceDto(BigDecimal balance)
 	{
 		this.balance = balance;
 	}
