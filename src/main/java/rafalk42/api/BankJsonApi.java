@@ -18,6 +18,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 
+/**
+ * This is an adapter for the Bank interface that wraps inputs and outputs as JSON strings, so that
+ * all the serialization and deserialization happens in here. I'm pretty sure that there's a much
+ * better way of doing this, with less code duplication and better maintainability, but let's just
+ * roll with this. She'll be right.
+ *
+ * It should be pretty easy and beneficial to create comprehensive unit tests for this layer, which
+ * would be a great way to test the HTTP REST API without actually using HTTP server. From here up
+ * to the REST API we are only adding the HTTP layer, not touching the JSON strings at all.
+ *
+ * Tests were not created due to a lack of time.
+ */
 public class BankJsonApi
 {
 	private final Bank bank;
@@ -49,7 +61,7 @@ public class BankJsonApi
 					.initialBalance(accountDescription.getInitialBalance())
 					.build();
 			
-			BankAccount bankAccount = bank.accountCreate(bankAccountDescription);
+			BankAccount bankAccount = bank.accountOpen(bankAccountDescription);
 			
 			AccountOpenResultDto result = new AccountOpenResultDto(bankAccount.getId());
 			
@@ -206,13 +218,13 @@ public class BankJsonApi
 	}
 	
 	@FunctionalInterface
-	private interface Foo
+	private interface DepositOrWithdrawOperation
 	{
 		OperationResult execute(BankAccount account, BigDecimal amount, String title)
 				throws BankInternalError, BankAccountNotFound;
 	}
 	
-	private String executeDepositOrWithdraw(String accountId, String depositWithdrawDescriptionJson, Foo operation)
+	private String executeDepositOrWithdraw(String accountId, String depositWithdrawDescriptionJson, DepositOrWithdrawOperation operation)
 			throws BankJsonApiInternalError, BankJsonApiEntityNotFound, BankJsonApiInvalidParameter
 	{
 		try
@@ -235,8 +247,7 @@ public class BankJsonApi
 			{
 				throw new BankJsonApiInvalidParameter("Account not found");
 			}
-
-//			OperationResult operationResult = bank.accountWithdraw(bankAccount.get(), withdrawDescription.getAmount());
+			
 			OperationResult operationResult = operation.execute(bankAccount.get(),
 																withdrawDescription.getAmount(),
 																withdrawDescription.getTitle());
@@ -266,7 +277,7 @@ public class BankJsonApi
 			throw new BankJsonApiInternalError(ex);
 		}
 	}
-
+	
 	String transferExecute(String transferDescriptionJson)
 			throws BankJsonApiInternalError, BankJsonApiEntityNotFound, BankJsonApiInvalidParameter
 	{
@@ -333,6 +344,10 @@ public class BankJsonApi
 	}
 }
 
+/**
+ * Gson serialization and deserialization adapter for BigDecimal type. Uses half up rounding
+ * and 2 decimal places of precision.
+ */
 class BigDecimalTypeAdapter
 		extends TypeAdapter<BigDecimal>
 {

@@ -3,6 +3,9 @@ package rafalk42.bank.domain;
 import java.math.BigDecimal;
 
 
+/**
+ * Represents a collection of detailed information about a bank account.
+ */
 public class BankAccountInfo
 {
 	private final String description;

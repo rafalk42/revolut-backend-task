@@ -98,8 +98,8 @@ public class AccountDaoInMemoryTest
 																 accountId2,
 																 accountId3));
 		Set<String> foundAccountIds = allAccounts.stream()
-				.map(AccountInfo::getId)
-				.collect(Collectors.toSet());
+												 .map(AccountInfo::getId)
+												 .collect(Collectors.toSet());
 		
 		assertEquals(foundAccountIds.size(), 3);
 		assertEquals(foundAccountIds, allAccountsIds);

@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 
 /**
- * A simple in-memory data store, an implementation of account DAO.
+ * A simple in-memory data store, implementation of account DAO.
  * Important:
  * 1. it does not support any kind of persistence,
  * 2. it is NOT thread-safe by any means,
@@ -60,11 +60,11 @@ public class AccountDaoInMemory
 			throws AccountDaoInternalError
 	{
 		return accounts.entrySet()
-				.stream()
-				.map(entry -> new AccountInfo(entry.getKey(),
-											  entry.getValue().description,
-											  entry.getValue().balance))
-				.collect(Collectors.toSet());
+					   .stream()
+					   .map(entry -> new AccountInfo(entry.getKey(),
+													 entry.getValue().description,
+													 entry.getValue().balance))
+					   .collect(Collectors.toSet());
 	}
 	
 	@Override
@@ -96,7 +96,7 @@ public class AccountDaoInMemory
 		}
 		
 		return accounts.get(accountId)
-				.getBalance();
+					   .getBalance();
 	}
 	
 	@Override
@@ -130,11 +130,22 @@ public class AccountDaoInMemory
 		accounts.remove(accountId);
 	}
 	
+	/**
+	 * Generate another, unique ID for account. Uniqueness is only guaranteed per instance, not globally.
+	 *
+	 * @return new unique ID
+	 */
 	private String getNextAccountId()
 	{
 		return String.format("%010d", accountIdCounter++);
 	}
 	
+	/**
+	 * Check if given ID can be used. Just a null check at this point. This method just saved a few lines
+	 * and allows to easily add new checks.
+	 *
+	 * @param accountId account ID to check
+	 */
 	private void verifyAccountId(String accountId)
 	{
 		if (accountId == null)
@@ -143,6 +154,9 @@ public class AccountDaoInMemory
 		}
 	}
 	
+	/**
+	 * Object that holds information about a single account. No logic, just simple POJO.
+	 */
 	private static class AccountInMemory
 	{
 		private final String description;

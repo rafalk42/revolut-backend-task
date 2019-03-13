@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
  * Also note that the method of testing used here - mock of the account DAO and deep introspection
  * of its use by the RockefellerBank - is tightly coupled with this particular Bank implementation
  * and relies heavily on the particular implementation details of RockefellerBank. I don't have
- * any better idea about it at this point...
+ * any better idea on how to approach it at this point...
  */
 public class RockefellerBankTest
 {
@@ -52,7 +52,7 @@ public class RockefellerBankTest
 				.build();
 		
 		accountDaoMock.openResult = exampleAccountId1;
-		BankAccount account = bank.accountCreate(accountDescription);
+		BankAccount account = bank.accountOpen(accountDescription);
 		
 		assertEquals(1, accountDaoMock.openCallCounter); // open called once
 		assertEquals(exampleAccountId1, account.getId()); // returned account ID matches

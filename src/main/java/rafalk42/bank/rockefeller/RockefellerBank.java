@@ -15,6 +15,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 
+/**
+ * Implementation of a simple Bank that uses AccountDAO for data storage. It is thread-safe
+ * and locking is global per instance, without any granularity, e.g. per account. Thread-safety of
+ * underlying DAO is not required.
+ */
 public class RockefellerBank
 		implements Bank
 {
@@ -27,9 +32,6 @@ public class RockefellerBank
 	 * Added bonus is that we are not depending on the thread safety of the account DAO implementation.
 	 */
 	private final Lock transactionLock;
-	/**
-	 *
-	 */
 	private final BigDecimal rulesMinimumTransferAmount = BigDecimal.valueOf(1, 2);
 	
 	public RockefellerBank(AccountDao accountDao)
@@ -40,7 +42,7 @@ public class RockefellerBank
 	}
 	
 	@Override
-	public BankAccount accountCreate(BankAccountDescription accountDescription)
+	public BankAccount accountOpen(BankAccountDescription accountDescription)
 			throws BankInternalError
 	{
 		try
@@ -185,9 +187,9 @@ public class RockefellerBank
 		
 		try
 		{
-			String accountId = account.getId();
-			
 			transactionLock.lock();
+			
+			String accountId = account.getId();
 			
 			if (!accountDao.doesItExist(accountId))
 			{
@@ -220,9 +222,9 @@ public class RockefellerBank
 		
 		try
 		{
-			String accountId = account.getId();
-			
 			transactionLock.lock();
+			
+			String accountId = account.getId();
 			
 			if (!accountDao.doesItExist(accountId))
 			{
@@ -256,10 +258,10 @@ public class RockefellerBank
 		
 		try
 		{
+			transactionLock.lock();
+			
 			String sourceAccountId = sourceAccount.getId();
 			String destinationAccountId = destinationAccount.getId();
-			
-			transactionLock.lock();
 			
 			if (!accountDao.doesItExist(sourceAccountId))
 			{

@@ -1,9 +1,15 @@
 The business domain is represented by an simple abstract bank, which exposes an API for performing operations.
+A layer beneath if the bank sits an account DAO that handles data storage.
 
 [Bank]
 * account: ID, balance
  + open
+ + getInfoAll
  + findById
+ + getInfo
+ + getBalance
+ + deposit
+ + withdraw
  + transfer
  + close
 <optional>
@@ -12,19 +18,14 @@ The business domain is represented by an simple abstract bank, which exposes an 
 
 [Account DAO]
 + open
++ doesItExist
++ findAll
++ getInfo
 + getBalance
 + setBalance
 + close
-+ doesItExist
 
 [AuditLog DAO]
 + log
 + findByTimestamp
 + findByData
-
-------------------------------
-[Bank Java API]
-* bank
- + accountCreate (AccountDescription): Account
- + accountFindById (AccountId): Account
- + transfer (Account, Account, Amount): TransferResult

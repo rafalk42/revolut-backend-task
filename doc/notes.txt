@@ -15,11 +15,11 @@ Implicit requirements:
 	2. There are no detailed requirements, use common sense.
 
 -------------------------------------------------------------------------------------------------------
-| review of others attempts
+| review of other attempts
 -------------------------------------------------------------------------------------------------------
 
 [peshrus]
-- a lot of unnecessary dependencies (Guice, Jedis, embedded-redis, Mockito)
+- a lot of unnecessary dependencies (Guice, Jedis, embedded-redis)
 - use of a real database instead of in-memory datastore
 - not parallel, no synchronization
 - use of GET which should be idempotent instead of POST or PUT
@@ -43,7 +43,7 @@ Implicit requirements:
 
 [lee-walters]
 - proper REST
-- ton of heavy dependencies: dropwizard, mockito, h2db, hibernate
+- ton of heavy dependencies: dropwizard, h2db, hibernate
 - no unit tests, just integration/functional
 - poor attempt at concurrency testing
 - poor model (mutable POJOs)
@@ -56,9 +56,7 @@ Implicit requirements:
 | design decisions/assumptions
 -------------------------------------------------------------------------------------------------------
 * proper domain design: entities, interfaces; abstract bank
-* separate business logic with injected dependencies
-* unit tests for the bank business logic
-* clear layers separation: DAO, bank, API, HTTP server; or other division based on the design
+* unit tests for bank and dao implementations
+* clear separation of layers: DAO, bank, API, HTTP server; or other division based on the design
 * in-memory storage (Java collections)
-* first iteration with simple lock based transaction synchronization
-* 
+* simple lock based transaction synchronization

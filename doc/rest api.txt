@@ -1,8 +1,10 @@
 [routes]
-POST /bank/accounts				open new account
-GET /bank/accounts				list all account info
-GET /bank/accounts/<ID>			get info about an account
-GET /bank/accounts/<ID>/balance	get a balance of an account
-DELETE /bank/accounts/<ID>		close an account
+POST /bank/accounts					open a new account
+GET /bank/accounts					list all accounts with info
+GET /bank/accounts/<ID>				get info about an account
+GET /bank/accounts/<ID>/balance		get a balance of an account
+POST /bank/accounts/<ID>/deposit	make a deposit to account
+POST /bank/accounts/<ID>/withdraw	withdraw amount from account
+DELETE /bank/accounts/<ID>			close an account
 
 POST /bank/transfers	order a transfer from source to destination account

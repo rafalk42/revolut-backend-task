@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 
+/**
+ * Representation of all the information about an account. Used as a part of the public interface by the account DAO.
+ */
 public class AccountInfo
 {
 	private final String id;
